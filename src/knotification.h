@@ -84,13 +84,18 @@ class KNOTIFICATIONS_EXPORT KNotification : public QObject
     Q_PROPERTY(Urgency urgency READ urgency WRITE setUrgency NOTIFY urgencyChanged)
     /**
      * @copydoc setAutoDelete
-     * @seince 5.88
+     * @since 5.88
      */
     Q_PROPERTY(bool autoDelete READ isAutoDelete WRITE setAutoDelete NOTIFY autoDeleteChanged)
     /**
      * @since 5.90
      */
     Q_PROPERTY(QString xdgActivationToken READ xdgActivationToken NOTIFY xdgActivationTokenChanged)
+    /**
+     * @copydoc setHint
+     * @since 5.101
+     */
+    Q_PROPERTY(QVariantMap hints READ hints WRITE setHints NOTIFY hintsChanged)
 
 public:
     /**
@@ -442,7 +447,7 @@ public:
      */
     void setContexts(const ContextList &contexts);
     /**
-     * append a context at the list of contexts, see KNotificaiton::Context
+     * append a context at the list of contexts, see KNotification::Context
      * @param context the context which is added
      */
     void addContext(const Context &context);
@@ -664,6 +669,11 @@ Q_SIGNALS:
      * @since 5.90
      */
     void xdgActivationTokenChanged();
+    /**
+     * Emitted when @p hints changes.
+     * @since 5.101
+     */
+    void hintsChanged();
 
 public Q_SLOTS:
     /**
@@ -694,7 +704,7 @@ public Q_SLOTS:
      * if you want to show your own presentation in your application, you should use this
      * function, so it will not be automatically closed when there is nothing to show.
      *
-     * Don't forgot to deref, or the notification may be never closed if there is no timeout.
+     * Don't forget to deref, or the notification may be never closed if there is no timeout.
      *
      * @see deref
      */
@@ -728,7 +738,7 @@ public Q_SLOTS:
      * @param hint the hint's key
      * @param value the hint's value
      */
-    void setHint(const QString &hint, const QVariant &value);
+    Q_INVOKABLE void setHint(const QString &hint, const QVariant &value);
 
     /**
      * @since 5.57
@@ -736,10 +746,17 @@ public Q_SLOTS:
      */
     QVariantMap hints() const;
 
+    /**
+     * @since 5.101
+     * Set custom hints on the notification.
+     * @sa setHint
+     */
+    void setHints(const QVariantMap &hints);
+
 private:
     friend class KNotificationManager;
     struct Private;
-    Private *const d;
+    std::unique_ptr<Private> const d;
 
 protected:
     /**

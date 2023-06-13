@@ -17,6 +17,7 @@
 #include <QMovie>
 #include <QPainter>
 #include <QPixmap>
+#include <QPushButton>
 #include <QStandardPaths>
 #ifdef Q_OS_MACOS
 #include <QFontDatabase>
@@ -69,7 +70,6 @@ KStatusNotifierItem::~KStatusNotifierItem()
     if (d->associatedWidget) {
         KWindowSystem::self()->disconnect(d->associatedWidget);
     }
-    delete d;
 }
 
 QString KStatusNotifierItem::id() const
@@ -653,6 +653,14 @@ void KStatusNotifierItem::activate(const QPoint &pos)
     d->checkVisibility(pos);
 }
 
+void KStatusNotifierItem::hideAssociatedWidget()
+{
+    if (!d->associatedWidget) {
+        return;
+    }
+    d->minimizeRestore(false);
+}
+
 QString KStatusNotifierItem::providedToken() const
 {
 #ifdef QT_DBUS_LIB
@@ -1125,11 +1133,16 @@ void KStatusNotifierItemPrivate::maybeQuit()
         caption = QCoreApplication::applicationName();
     }
 
-    QString query = KStatusNotifierItem::tr("<qt>Are you sure you want to quit <b>%1</b>?</qt>").arg(caption);
+    const QString title = KStatusNotifierItem::tr("Confirm Quit From System Tray", "@title:window");
+    const QString query = KStatusNotifierItem::tr("<qt>Are you sure you want to quit <b>%1</b>?</qt>").arg(caption);
 
-    if (QMessageBox::question(associatedWidget, KStatusNotifierItem::tr("Confirm Quit From System Tray", "@title:window"), query) == QMessageBox::Yes) {
-        qApp->quit();
-    }
+    auto *dialog = new QMessageBox(QMessageBox::Question, title, query, QMessageBox::NoButton, associatedWidget);
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
+    auto *quitButton = dialog->addButton(KStatusNotifierItem::tr("Quit", "@action:button"), QMessageBox::AcceptRole);
+    quitButton->setIcon(QIcon::fromTheme(QStringLiteral("application-exit")));
+    dialog->addButton(QMessageBox::Cancel);
+    QObject::connect(dialog, &QDialog::accepted, qApp, &QApplication::quit);
+    dialog->show();
 }
 
 void KStatusNotifierItemPrivate::minimizeRestore()

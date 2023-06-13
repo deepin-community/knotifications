@@ -68,7 +68,7 @@ elseif (Phonon4Qt5_FOUND)
     )
 endif()
 
-if (Qt5TextToSpeech_FOUND)
+if (Qt${QT_MAJOR_VERSION}TextToSpeech_FOUND)
     target_sources(KF5Notifications PRIVATE
         notifybytts.cpp
     )
@@ -139,16 +139,14 @@ if (Canberra_FOUND)
         Canberra::Canberra)
 endif()
 
-if (Qt5TextToSpeech_FOUND)
-    target_link_libraries(KF5Notifications PRIVATE Qt5::TextToSpeech)
+if (Qt${QT_MAJOR_VERSION}TextToSpeech_FOUND)
+    target_link_libraries(KF5Notifications PRIVATE Qt${QT_MAJOR_VERSION}::TextToSpeech)
 endif()
 
-if(X11_FOUND)
+if(HAVE_X11)
    target_link_libraries(KF5Notifications PRIVATE ${X11_X11_LIB})
     if (TARGET Qt5::X11Extras)
         target_link_libraries(KF5Notifications PRIVATE Qt5::X11Extras)
-    elseif (TARGET Qt6::Gui)
-        target_link_libraries(KF5Notifications PRIVATE Qt6::GuiPrivate) # qtx11extras_p.h
     endif()
 endif()
 
@@ -164,7 +162,7 @@ if(HAVE_DBUSMENUQT)
   target_link_libraries(KF5Notifications PRIVATE dbusmenu-qt5)
 endif()
 
-if (ANDROID)
+if (TARGET Qt5::AndroidExtras)
     target_link_libraries(KF5Notifications PRIVATE Qt5::AndroidExtras)
 endif()
 
@@ -187,7 +185,7 @@ ecm_generate_headers(KNotifications_HEADERS
   REQUIRED_HEADERS KNotifications_HEADERS
 )
 
-install(TARGETS KF5Notifications EXPORT KF5NotificationsTargets ${KF5_INSTALL_TARGETS_DEFAULT_ARGS})
+install(TARGETS KF5Notifications EXPORT KF5NotificationsTargets ${KF_INSTALL_TARGETS_DEFAULT_ARGS})
 
 install(FILES
   ${CMAKE_CURRENT_BINARY_DIR}/knotifications_export.h
@@ -210,7 +208,7 @@ if(BUILD_QCH)
         ORG_DOMAIN org.kde
         SOURCES # using only public headers, to cover only public API
             ${KNotifications_HEADERS}
-        MD_MAINPAGE "${CMAKE_SOURCE_DIR}/README.md"
+            "${CMAKE_SOURCE_DIR}/Mainpage.dox"
         IMAGE_DIRS "${CMAKE_SOURCE_DIR}/docs/pics"
         LINK_QCHS
             Qt5Widgets_QCH
@@ -238,12 +236,6 @@ if (TARGET Qt${QT_MAJOR_VERSION}::DBus)
         org.kde.StatusNotifierWatcher.xml
         DESTINATION ${KDE_INSTALL_DBUSINTERFACEDIR}
         RENAME kf5_org.kde.StatusNotifierWatcher.xml)
-endif()
-
-if (NOT ANDROID)
-    install(FILES
-        knotificationplugin.desktop
-        DESTINATION ${KDE_INSTALL_KSERVICETYPESDIR})
 endif()
 
 include(ECMGeneratePriFile)

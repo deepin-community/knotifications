@@ -81,7 +81,6 @@ KNotification::~KNotification()
     if (d->id >= 0) {
         KNotificationManager::self()->close(d->id);
     }
-    delete d;
 }
 
 QString KNotification::eventId() const
@@ -623,11 +622,26 @@ void KNotification::setHint(const QString &hint, const QVariant &value)
     if (d->id >= 0) {
         d->updateTimer.start();
     }
+    Q_EMIT hintsChanged();
 }
 
 QVariantMap KNotification::hints() const
 {
     return d->hints;
+}
+
+void KNotification::setHints(const QVariantMap &hints)
+{
+    if (hints == d->hints) {
+        return;
+    }
+
+    d->needUpdate = true;
+    d->hints = hints;
+    if (d->id >= 0) {
+        d->updateTimer.start();
+    }
+    Q_EMIT hintsChanged();
 }
 
 QString KNotification::xdgActivationToken() const

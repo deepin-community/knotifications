@@ -1,18 +1,22 @@
 cmake_minimum_required(VERSION 3.16)
 
-set(KF_VERSION "5.90.0") # handled by release scripts
-set(KF_DEP_VERSION "5.90.0") # handled by release scripts
+set(KF_VERSION "5.103.0") # handled by release scripts
+set(KF_DEP_VERSION "5.103.0") # handled by release scripts
 project(KNotifications VERSION ${KF_VERSION})
 
 # ECM setup
 include(FeatureSummary)
-find_package(ECM 5.90.0  NO_MODULE)
+find_package(ECM 5.103.0  NO_MODULE)
 set_package_properties(ECM PROPERTIES TYPE REQUIRED DESCRIPTION "Extra CMake Modules." URL "https://commits.kde.org/extra-cmake-modules")
 feature_summary(WHAT REQUIRED_PACKAGES_NOT_FOUND FATAL_ON_MISSING_REQUIRED_PACKAGES)
 
 set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules)
 
+include(KDEInstallDirs)
+include(KDECMakeSettings)
+include(KDEFrameworkCompilerSettings NO_POLICY_SCOPE)
 
+include(KDEGitCommitHooks)
 include(GenerateExportHeader)
 include(ECMSetupVersion)
 include(ECMGenerateHeaders)
@@ -20,6 +24,7 @@ include(ECMQtDeclareLoggingCategory)
 include(ECMPoQmTools)
 include(ECMAddQch)
 include(ECMGenerateExportHeader)
+include(ECMDeprecationSettings)
 
 set(EXCLUDE_DEPRECATED_BEFORE_AND_AT 0 CACHE STRING "Control the range of deprecated API excluded from the build [default=0].")
 
@@ -38,7 +43,10 @@ set(REQUIRED_QT_VERSION 5.15.2)
 set(CMAKE_AUTORCC TRUE)
 
 if (ANDROID)
-    find_package(Qt${QT_MAJOR_VERSION} ${REQUIRED_QT_VERSION} CONFIG REQUIRED Gui AndroidExtras)
+    find_package(Qt${QT_MAJOR_VERSION} ${REQUIRED_QT_VERSION} CONFIG REQUIRED Gui)
+    if (QT_MAJOR_VERSION EQUAL "5")
+        find_package(Qt5 ${REQUIRED_QT_VERSION} CONFIG REQUIRED AndroidExtras)
+    endif()
     find_package(Gradle REQUIRED)
     find_package(Qt${QT_MAJOR_VERSION} ${REQUIRED_QT_VERSION} QUIET OPTIONAL_COMPONENTS Widgets)
     if (NOT TARGET Qt${QT_MAJOR_VERSION}::Widgets AND EXCLUDE_DEPRECATED_BEFORE_AND_AT EQUAL 0)
@@ -52,38 +60,29 @@ if (NOT ANDROID AND NOT WIN32)
     find_package(Qt${QT_MAJOR_VERSION} ${REQUIRED_QT_VERSION} CONFIG REQUIRED DBus)
 endif()
 
-find_package(Qt${QT_MAJOR_VERSION} ${REQUIRED_QT_VERSION} QUIET OPTIONAL_COMPONENTS Qml)
+find_package(Qt${QT_MAJOR_VERSION} ${REQUIRED_QT_VERSION} QUIET OPTIONAL_COMPONENTS Qml TextToSpeech)
 
-# QTextToSpeech doesn't exist in Qt 6.2
-if (QT_MAJOR_VERSION STREQUAL "5")
-    find_package(Qt5 ${REQUIRED_QT_VERSION} QUIET OPTIONAL_COMPONENTS TextToSpeech)
-    set_package_properties(Qt5TextToSpeech PROPERTIES
+find_package(Qt${QT_MAJOR_VERSION}TextToSpeech ${REQUIRED_QT_VERSION} QUIET CONFIG)
+set_package_properties(Qt${QT_MAJOR_VERSION}TextToSpeech PROPERTIES
     DESCRIPTION "Qt text to speech module"
     TYPE OPTIONAL
     PURPOSE "Required to build text to speech notification support")
-    if (TARGET Qt5::TextToSpeech)
-        add_definitions(-DHAVE_SPEECH)
-    endif()
+if (TARGET Qt${QT_MAJOR_VERSION}::TextToSpeech)
+    add_definitions(-DHAVE_SPEECH)
 endif()
-
-include(KDEInstallDirs)
-include(KDEFrameworkCompilerSettings NO_POLICY_SCOPE)
-include(KDECMakeSettings)
-include(KDEGitCommitHooks)
 
 if (NOT APPLE AND NOT WIN32)
-    find_package(X11)
-endif()
-
-set(HAVE_X11 ${X11_FOUND})
-set(HAVE_XTEST ${X11_XTest_FOUND})
-if(X11_FOUND)
-    if (QT_MAJOR_VERSION STREQUAL "5")
-        find_package(Qt5X11Extras ${REQUIRED_QT_VERSION} NO_MODULE REQUIRED)
-    elseif (QT_MAJOR_VERSION STREQUAL "6")
-        find_package(Qt${QT_MAJOR_VERSION} ${REQUIRED_QT_VERSION} CONFIG REQUIRED Gui) # qtx11extras_p.h
+    option(WITHOUT_X11 "Build without X11 support (skips finding X11)." OFF)
+    if(NOT WITHOUT_X11)
+        find_package(X11)
+        set(HAVE_X11 ${X11_FOUND})
+        set(HAVE_XTEST ${X11_XTest_FOUND})
+        if(X11_FOUND AND QT_MAJOR_VERSION STREQUAL "5")
+            find_package(Qt5X11Extras ${REQUIRED_QT_VERSION} NO_MODULE REQUIRED)
+        endif()
     endif()
 endif()
+
 if(APPLE)
    find_package(Qt5MacExtras ${REQUIRED_QT_VERSION} REQUIRED NO_MODULE)
 endif()
@@ -140,11 +139,14 @@ if (TARGET Qt${QT_MAJOR_VERSION}::Widgets)
 endif()
 
 remove_definitions(-DQT_NO_CAST_FROM_BYTEARRAY)
-ecm_install_po_files_as_qm(po)
+
+ecm_install_po_files_as_qm(poqm)
+
 if (NOT APPLE) # QtMac::setBadgeLabelText is deprecated
-add_definitions(-DQT_DISABLE_DEPRECATED_BEFORE=0x050f02)
+ecm_set_disabled_deprecation_versions(QT 5.15.2)
 endif()
-add_definitions(-DKF_DISABLE_DEPRECATED_BEFORE_AND_AT=0x055900)
+ecm_set_disabled_deprecation_versions(KF 5.97)
+
 add_subdirectory(src)
 if (BUILD_TESTING)
     add_subdirectory(tests)
@@ -185,7 +187,7 @@ install(EXPORT KF5NotificationsTargets DESTINATION "${CMAKECONFIG_INSTALL_DIR}" 
 
 install(FILES
    ${CMAKE_CURRENT_BINARY_DIR}/knotifications_version.h
-  DESTINATION ${KDE_INSTALL_INCLUDEDIR_KF} COMPONENT Devel
+  DESTINATION ${KDE_INSTALL_INCLUDEDIR_KF}/KNotifications COMPONENT Devel
 )
 
 feature_summary(WHAT ALL INCLUDE_QUIET_PACKAGES FATAL_ON_MISSING_REQUIRED_PACKAGES)

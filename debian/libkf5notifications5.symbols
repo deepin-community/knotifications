@@ -16,6 +16,7 @@ libKF5Notifications.so.5 libkf5notifications5 #MINVER#
  _ZN13KNotification11textChangedEv@Base 5.90.0
  _ZN13KNotification11urlsChangedEv@Base 5.90.0
  _ZN13KNotification12flagsChangedEv@Base 5.90.0
+ _ZN13KNotification12hintsChangedEv@Base 5.101.0
  _ZN13KNotification12titleChangedEv@Base 5.90.0
  _ZN13KNotification13setAutoDeleteEb@Base 5.90.0
  _ZN13KNotification14actionsChangedEv@Base 5.90.0
@@ -56,6 +57,7 @@ libKF5Notifications.so.5 libkf5notifications5 #MINVER#
  _ZN13KNotification7setUrlsERK5QListI4QUrlE@Base 5.35.0
  _ZN13KNotification8activateEj@Base 4.96.0
  _ZN13KNotification8setFlagsERK6QFlagsINS_16NotificationFlagEE@Base 4.96.0
+ _ZN13KNotification8setHintsERK4QMapI7QString8QVariantE@Base 5.101.0
  _ZN13KNotification8setTitleERK7QString@Base 4.96.0
  _ZN13KNotification9activatedEj@Base 4.96.0
  _ZN13KNotification9activatedEv@Base 4.96.0
@@ -149,6 +151,7 @@ libKF5Notifications.so.5 libkf5notifications5 #MINVER#
  _ZN19KStatusNotifierItem17activateRequestedEbRK6QPoint@Base 4.96.0
  _ZN19KStatusNotifierItem18setToolTipSubTitleERK7QString@Base 4.96.0
  _ZN19KStatusNotifierItem19setAssociatedWidgetEP7QWidget@Base 4.96.0
+ _ZN19KStatusNotifierItem20hideAssociatedWidgetEv@Base 5.93.0
  _ZN19KStatusNotifierItem20setOverlayIconByNameERK7QString@Base 4.96.0
  _ZN19KStatusNotifierItem20setToolTipIconByNameERK7QString@Base 4.96.0
  _ZN19KStatusNotifierItem22setAttentionIconByNameERK7QString@Base 4.96.0
