@@ -14,6 +14,8 @@
 
 #include <knotifications_export.h>
 
+#include <memory>
+
 class QAction;
 class QMenu;
 
@@ -78,7 +80,7 @@ public:
      * importance of the events that happens in the parent application
      */
     enum ItemStatus {
-        /// Nothing is happening in the application, so showing this icon is not required
+        /// Nothing is happening in the application, so showing this icon is not required. This is the default value
         Passive = 1,
         /// The application is doing something, or it is important that the
         /// icon is always reachable from the user
@@ -94,7 +96,7 @@ public:
      * so can be drawn in a different way or in a different place
      */
     enum ItemCategory {
-        /// An icon for a normal application, can be seen as its taskbar entry
+        /// An icon for a normal application, can be seen as its taskbar entry. This is the default value
         ApplicationStatus = 1,
         /// This is a communication oriented application; this icon will be used
         /// for things such as the notification of a new message
@@ -438,6 +440,17 @@ public Q_SLOTS:
      */
     virtual void activate(const QPoint &pos = QPoint());
 
+    /**
+     * Hides the main widget, if not already hidden.
+     *
+     * Stores some information about the window which otherwise would be lost due to unmapping
+     * from the window system. Use when toggling the main widget via activate(const QPoint &)
+     * is not wanted, but instead the hidden state should be reached in any case.
+     *
+     * @since 5.91
+     */
+    void hideAssociatedWidget();
+
 Q_SIGNALS:
     /**
      * Inform the host application that the mouse wheel
@@ -473,7 +486,7 @@ protected:
     bool eventFilter(QObject *watched, QEvent *event) override;
 
 private:
-    KStatusNotifierItemPrivate *const d;
+    std::unique_ptr<KStatusNotifierItemPrivate> const d;
 
     Q_PRIVATE_SLOT(d, void serviceChange(const QString &name, const QString &oldOwner, const QString &newOwner))
     Q_PRIVATE_SLOT(d, void contextMenuAboutToShow())

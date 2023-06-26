@@ -60,7 +60,7 @@ Files: src/imageconverter.cpp
 Copyright: 2009, Canonical
 License: LGPL-2+3
 
-Files: po/bg/knotifications5_qt.po
+Files: poqm/bg/knotifications5_qt.po
 Copyright: 2009-2013, Yasen Pramatarov <yasen@lindeas.com>
            2006-2009, Zlatko Popov <zlatkopopov@fsa-bg.org>
 License: GPL

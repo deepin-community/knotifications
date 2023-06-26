@@ -1,5 +1,4 @@
 usr/include/KF5/KNotifications/
-usr/include/KF5/knotifications_version.h
 usr/lib/*/cmake/KF5Notifications/
 usr/lib/*/libKF5Notifications.so
 usr/lib/*/qt5/mkspecs/modules/qt_KNotifications.pri
